@@ -75,75 +75,23 @@ chatgpt-response-collapser/
 
 ## ⚙️ How It Works
 
-This extension dynamically modifies the ChatGPT interface to enhance performance by collapsing lengthy responses. Here’s a breakdown of how it functions:
+This extension dynamically collapses and expands ChatGPT responses to improve readability and performance:
 
-### 🔍 1. DOM Monitoring with `MutationObserver`
-A `MutationObserver` continuously watches the DOM for newly generated responses in the ChatGPT thread. When a new message is added, it triggers the collapsing logic.
+- **Message Selection**  
+  The extension targets both assistant and user messages on the page that have not been processed yet. It excludes the last message from collapsing.
 
-```js
-const observer = new MutationObserver(handleNewResponses);
-observer.observe(targetNode, { childList: true, subtree: true });
-```
+- **Auto-Collapse Logic**  
+  - For **assistant responses**, the message is collapsed by default, and a "Show Full Response" button is added to reveal the full message.
+  - For **user messages**, only the first 5 words are shown by default with a "More..." button to expand the full message. A "Less" button is also provided to collapse it back.
 
----
+- **Button Creation**  
+  Custom buttons like "Show More" and "Show Full Response" are dynamically created and attached to each message. These buttons toggle the visibility of messages when clicked.
 
-### 📏 2. Auto-Collapse Logic
+- **DOM Monitoring**  
+  A `MutationObserver` is used to detect changes to the page (e.g., new responses). When the page content updates, the auto-collapse functionality is re-applied.
 
-Each response is scanned to check if it exceeds a configurable threshold:
-
-```js
-if (lineCount > COLLAPSE_LINE_THRESHOLD) {
-  collapseMessage(messageElement);
-}
-```
-
-You can configure the threshold in `content.js`:
-
-```js
-const COLLAPSE_LINE_THRESHOLD = 30;  // Collapse if message exceeds 30 lines
-const PREVIEW_LINES = 5;             // Show 5 lines in preview when collapsed
-```
-
----
-
-### 🔘 3. Toggle Button Injection
-
-For every collapsible message, a toggle button (`Show More` / `Show Less`) is injected:
-
-```js
-const toggleButton = document.createElement('button');
-toggleButton.textContent = 'Show More';
-toggleButton.onclick = () => toggleCollapse(messageElement);
-```
-
----
-
-### 🎨 4. Smooth CSS Transitions
-
-The extension uses `max-height` and `overflow` CSS rules to create a smooth expand/collapse animation:
-
-```css
-.collapsed {
-  max-height: 120px;
-  overflow: hidden;
-  position: relative;
-}
-
-.collapsed::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  height: 40px;
-  width: 100%;
-  background: linear-gradient(transparent, white);
-}
-```
-
----
-
-This system ensures a responsive and user-friendly experience even in long ChatGPT sessions.
-
----
+- **Error Handling**  
+  If an error occurs, it’s logged in the console for debugging.
 
 ## 🖼️ Screenshots
 
