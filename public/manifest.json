@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "ChatGPT Response Manager | Powered by SRJ",
+  "description": "Automatically collapse long text responses on ChatGPT to prevent browser crashes.",
+  "version": "1.0",
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": ["*://chatgpt.com/*"],
+  "content_scripts": [
+    {
+      "matches": ["*://chatgpt.com/*"],
+      "js": ["assets/popup.js", "assets/contentScript.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "128": "icons/icon128.png"
+    }
+  }
+}
