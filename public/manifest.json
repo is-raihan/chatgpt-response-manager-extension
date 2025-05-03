@@ -8,8 +8,9 @@
   "content_scripts": [
     {
       "matches": ["*://chatgpt.com/*"],
-      "js": ["assets/popup.js", "assets/contentScript.js"],
-      "run_at": "document_idle"
+      "js": ["assets/popup.js", "assets/content/contentScript.js"],
+      "run_at": "document_idle",
+      "type": "module"
     }
   ],
   "action": {
