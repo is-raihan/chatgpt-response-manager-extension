@@ -1,72 +1,80 @@
+# 🧠 ChatGPT Response Manager
 
-# 🧠 ChatGPT Response Collapser Extension
+A lightweight yet powerful Chrome Extension that helps manage ChatGPT conversations more efficiently by **collapsing long responses**, offering **quick previews**, and letting you **save important responses for later**.
 
-A lightweight browser extension that improves the performance and readability of ChatGPT by **collapsing and expanding long responses**. Ideal for users who work with large conversations and want a cleaner, faster interface.
+Perfect for power users who regularly work with long conversations and want a cleaner, faster, and more focused experience.
 
 ---
 
 ## ✨ Features
 
-- ✅ Automatically collapses lengthy ChatGPT responses
-- 🔄 Toggle expand/collapse on click
-- 📄 Optional preview (first few lines shown when collapsed)
-- 💾 (Optional) Save collapsed state with `localStorage`
-- ⚙️ Configurable thresholds (e.g., number of lines or characters)
-- 🚀 Performance-optimized with minimal DOM manipulation
+- ✅ Automatically **collapses lengthy ChatGPT responses**
+- 🔄 **Toggle expand/collapse** with “Show More” / “Show Less” buttons
+- 🧩 **Preview** of user messages (first 5 words shown)
+- 📌 **Add important responses to a “Card” list** for quick access later
+- 🚀 Detects and processes **new messages in real time**
+- 💾 Saves state with `localStorage` so your preferences persist
+- ⚙️ Configurable thresholds for collapsing (lines, characters, etc.)
+- 🧠 Optimized for minimal DOM manipulation and better performance
 
 ---
 
-## 🧰 Build & Usage Instructions
+## 📷 Demo
 
-This extension is built with **React.js**. To use it in your browser, you need to build the project and **manually copy the `contentScript.js` file into the `dist` folder**, as this script must be directly loaded via `manifest.json`.
+> Add a screenshot or GIF here showing:
+> - Before/After collapse
+> - Adding to cards
+> - Preview toggle and user experience
+
+---
+
+## 🧰 Installation & Build Instructions
+
+This project uses **React.js** and the Chrome Extension API.
 
 ### 🔨 Build Steps
 
-1. **Install dependencies:**
+1. **Install dependencies**  
+   ```bash
+   npm install
+   ```
 
-```bash
-npm install
-```
+2. **Build the project**  
+   ```bash
+   npm run build
+   ```
 
-2. **Build the extension:**
+   This outputs files into the `dist/` folder.
 
-```bash
-npm run build
-```
+3. **Manually copy `contentScript.js`** to the assets folder  
+   ```bash
+   cp public/contentScript.js dist/assets/contentScript.js
+   ```
 
-This will generate the output in the `dist/` directory.
+   > ⚠️ `contentScript.js` must be referenced directly in `manifest.json` due to Chrome’s Content Security Policy (CSP).
 
-3. **Manual step (important):**  
-   After the build completes, **copy `public/contentScript.js` (or your path) manually to the `dist/assets/` folder**, so it can be loaded by the extension:
+4. **Load in Chrome**
 
-```bash
-cp public/contentScript.js dist/assets/contentScript.js
-```
-
-> Note: `contentScript.js` must be declared directly in `manifest.json` and cannot be bundled through Webpack/Vite due to CSP (Content Security Policy) restrictions on `chrome.scripting`.
-
-4. **Load the extension in Chrome:**
-
-- Open `chrome://extensions/`
+- Visit `chrome://extensions/`
 - Enable **Developer Mode**
-- Click **Load unpacked**
+- Click **Load Unpacked**
 - Select the `dist/` folder
 
 ---
 
-## 📁 Project Structure
+## 🗂️ Project Structure
 
 ```
-chatgpt-response-collapser/
+chatgpt-response-manager/
 ├── public/
 │   └── contentScript.js        # must be manually copied post-build
 ├── src/
-│   └── App.jsx                 # React code
+│   └── App.jsx                 # React app entry
 ├── dist/
 │   ├── index.html
 │   ├── assets/
-│   │   ├── contentScript.js   # manually placed here
-│   │   └── main.js            # React build output
+│   │   ├── contentScript.js   # manually placed
+│   │   └── main.js            # React bundle
 │   └── manifest.json
 └── README.md
 ```
@@ -75,38 +83,26 @@ chatgpt-response-collapser/
 
 ## ⚙️ How It Works
 
-This extension dynamically collapses and expands ChatGPT responses to improve readability and performance:
+The extension enhances your ChatGPT experience through:
 
-- **Message Selection**  
-  The extension targets both assistant and user messages on the page that have not been processed yet. It excludes the last message from collapsing.
+- **Message Collapse**  
+  Automatically collapses assistant responses and previews user messages for quick scanning.
 
-- **Auto-Collapse Logic**  
-  - For **assistant responses**, the message is collapsed by default, and a "Show Full Response" button is added to reveal the full message.
-  - For **user messages**, only the first 5 words are shown by default with a "More..." button to expand the full message. A "Less" button is also provided to collapse it back.
+- **Interactive Controls**  
+  Each message gets a **"Show More" / "Show Less"** toggle, making long threads manageable.
 
-- **Button Creation**  
-  Custom buttons like "Show More" and "Show Full Response" are dynamically created and attached to each message. These buttons toggle the visibility of messages when clicked.
+- **Add to Card**  
+  Important responses can be **saved into a persistent “Card” section**—great for bookmarking key info or reusable prompts.
 
-- **DOM Monitoring**  
-  A `MutationObserver` is used to detect changes to the page (e.g., new responses). When the page content updates, the auto-collapse functionality is re-applied.
+- **Real-Time Monitoring**  
+  A `MutationObserver` tracks updates to the conversation and dynamically applies all functionality.
 
-- **Error Handling**  
-  If an error occurs, it’s logged in the console for debugging.
-
-## 🖼️ Screenshots
-
-> Add GIFs or screenshots here to demonstrate:
-> - Before and after collapsing
-> - Toggle interaction
-> - Performance boost with long threads
-
-Example (placeholder):
-
-![Demo Screenshot](assets/demo.gif)
+- **Performance Friendly**  
+  Designed to minimize DOM updates and keep the page smooth, even during large conversations.
 
 ---
 
-## ✅ Compatibility
+## ✅ Browser Support
 
 | Browser        | Supported |
 |----------------|-----------|
@@ -118,40 +114,41 @@ Example (placeholder):
 
 ## 🧪 Contributing
 
-We welcome contributions from the community! Here’s how you can get involved:
+We welcome PRs and contributions from the community!
 
-### 🔧 Steps
+### Steps to Contribute
 
-1. **Fork** this repository
-2. **Create a feature branch**:
+1. Fork the repo  
+2. Create a feature branch  
    ```bash
-   git checkout -b your-feature-name
+   git checkout -b feature-name
    ```
-3. **Make your changes** in `content.js`, `styles.css`, or other relevant files
-4. **Push your changes** and open a Pull Request:
+3. Make changes and commit  
+4. Push and open a PR  
    ```bash
-   git push origin your-feature-name
+   git push origin feature-name
    ```
 
-Clone the project locally:
+Clone and set up the project:
 
 ```bash
-git clone https://github.com/yourusername/chatgpt-response-collapser.git
-cd chatgpt-response-collapser
+git clone https://github.com/yourusername/chatgpt-response-manager.git
+cd chatgpt-response-manager
 ```
 
 ---
 
 ## 📄 License
 
-This project is licensed under the **MIT License**.  
-Feel free to use, modify, and distribute as needed.
+Licensed under the [MIT License](LICENSE).
+
+Feel free to modify and use for personal or professional use.
 
 ---
 
 ## 🙌 Acknowledgments
 
-Built out of necessity to improve performance and readability during large ChatGPT sessions.  
-Thanks to the open-source community for the inspiration and support!
+Built to improve real-world productivity and focus while working with ChatGPT.  
+Special thanks to the open-source community for providing tools, inspiration, and guidance.
 
-> *“Simple tools often solve the biggest frustrations.”*
+> *“Sometimes, small tools make the biggest difference.”*
