@@ -1,7 +1,8 @@
 
 
 /* global chrome */
-import React from "react";
+import React, { useEffect } from "react";
+import CreateResponseManager from "../components/Pop";
 
 function Popup() {
 
@@ -92,24 +93,9 @@ function Popup() {
     });
   };
 
-
-
   return (
-    <div style={{ padding: "16px", width: '400px', borderRadius: '20px' }}>
-      <h3>ChatGPT Response Manager</h3>
-      <button
-        onClick={handleCollapseClick}
-        style={{
-          padding: "10px 20px",
-          cursor: "pointer",
-          backgroundColor: "#007bff",
-          color: "#fff",
-          border: "none",
-          borderRadius: "6px",
-        }}
-      >
-        Collapse All Responses
-      </button>
+    <div>
+      <CreateResponseManager />
     </div>
   );
 }

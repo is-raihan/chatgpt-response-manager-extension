@@ -1,115 +1,152 @@
 const favKey =  'fav_';
 let storedArticels = JSON.parse(localStorage.getItem(favKey) || '[]');
+const url = window.location.href;
+
+const createButton = (text, onClick) => {
+  const button = document.createElement('button');
+  button.innerText = text;
+  Object.assign(button.style, {
+    display: 'inline-block',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    textAlign: 'left',
+    margin: '4px 8px 4px 0'
+  });
+  
+  
+  button.addEventListener('click', onClick);
+  return button;
+};
+
+const createFavouriteIcon = (short_article) => {
+
+
+  const favBtn = document.createElement('span');
+  favBtn.classList.add(`srj_${short_article.id}`);
+  if(!storedArticels.some(art => art.id === short_article.id)){
+  favBtn.innerText = '♡'; 
+  }else{
+  favBtn.innerText = '♥'; 
+  }
+  favBtn.title = 'Mark as Favourite';
+  favBtn.style.cursor = 'pointer';
+  favBtn.style.fontSize = '24px';
+  favBtn.style.marginLeft = '10px';
+  favBtn.style.color = '#FFD700';
+
+
+  favBtn.addEventListener('click', () => {
+
+  if(storedArticels.length > 0 ){
+ 
+    if(!storedArticels.some(art => art.id === short_article.id)){
+     const merged = [...storedArticels,short_article];
+      
+      const sortedArtiles = merged.sort();
+      localStorage.setItem(favKey, JSON.stringify(sortedArtiles));
+      favBtn.innerText = '♥';
+      storedArticels = sortedArtiles;
+      console.log("New item", short_article);
+    }else{
+      const removed = storedArticels.filter(art => art.id.toString() !== short_article.id.toString());
+  
+      storedArticels = removed.sort();
+     
+      localStorage.setItem(favKey,JSON.stringify(storedArticels));
+      favBtn.innerText = '♡';
+    }
+
+  }else{
+    console.log('intial item', short_article);
+    storedArticels.push(short_article);
+    localStorage.setItem(favKey, JSON.stringify([short_article]));
+    favBtn.innerText = '♥';
+  }
+
+  });
+
+  return favBtn;
+};
+
+const createToggleBtn = (block, short_article,isScrolled=false) => {
+  const hideBtn = createButton('Hide Full Response', () => {
+    block.style.display = 'none';
+    hideBtn.remove();
+    block.parentNode.insertBefore(showBtn, block.nextSibling);
+  });
+  const showBtn = createButton('Show Full Response', () => {
+    block.style.display = 'block';
+    showBtn.remove();
+    hideBtn.classList.add(`hidden_btn_${short_article.id}`);
+    block.parentNode.insertBefore(hideBtn, block.nextSibling);
+  });
+  
+  showBtn.classList.add(`show_btn_${short_article.id}`);
+
+  const favIcon = createFavouriteIcon(short_article);
+
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+
+  if(!isScrolled){
+    wrapper.appendChild(showBtn);
+  }else{
+    const getShowBtnElement = document.querySelector(`.show_btn_${short_article.id}`);
+
+    getShowBtnElement?.remove();
+    favIcon.remove();
+    wrapper.appendChild(hideBtn);
+  }
+  wrapper.appendChild(favIcon);
+
+  return {showBtn,wrapper};
+}
+
+const makeToggleCollapsToScroll = (assistantMessage,article) => {
+  const {wrapper} = createToggleBtn(assistantMessage,article, true);
+  assistantMessage.parentNode.insertBefore(wrapper, assistantMessage.nextSibling);
+}
 
 function autoCollapse() {
   try {
     const assistantMessages = Array.from(document.querySelectorAll('[data-message-author-role="assistant"]:not([data-processed])'));
     const userMessages = Array.from(document.querySelectorAll('.whitespace-pre-wrap:not([data-processed])'));
 
-    const assistantToCollapse = assistantMessages.slice(0, -1);
-    const userToCollapse = userMessages.slice(0, -1);
+    const assistantToCollapse = assistantMessages.slice(0,-1);
+    const userToCollapse = userMessages;
 
-    const createButton = (text, onClick) => {
-      const button = document.createElement('button');
-      button.innerText = text;
-      Object.assign(button.style, {
-        display: 'inline-block',
-        cursor: 'pointer',
-        fontSize: '14px',
-        fontWeight: 'bold',
-        textAlign: 'left',
-        margin: '4px 8px 4px 0'
-      });
-      button.addEventListener('click', onClick);
-      return button;
-    };
-
-    const createFavouriteIcon = (short_article) => {
-
-
-      // Load state
-
-      const favBtn = document.createElement('span');
-      if(!storedArticels.some(art => art.id === short_article.id)){
-      favBtn.innerText = '☆'; 
-      }else{
-      favBtn.innerText = '★'; 
-      }
-      favBtn.title = 'Mark as Favourite';
-      favBtn.style.cursor = 'pointer';
-      favBtn.style.fontSize = '24px';
-      favBtn.style.marginLeft = '10px';
-      favBtn.style.color = '#FFD700';
-
-
-      favBtn.addEventListener('click', () => {
- 
-      if(storedArticels.length > 0 ){
-     
-        if(!storedArticels.some(art => art.id === short_article.id)){
-         const merged = [...storedArticels,short_article];
-          
-          const sortedArtiles = merged.sort();
-          localStorage.setItem(favKey, JSON.stringify(sortedArtiles));
-          favBtn.innerText = '★';
-          storedArticels = sortedArtiles;
-          console.log("New item", short_article);
-        }else{
-          const removed = storedArticels.filter(art => art.id.toString() !== short_article.id.toString());
-      
-          storedArticels = removed.sort();
-         
-          localStorage.setItem(favKey,JSON.stringify(storedArticels));
-          favBtn.innerText = '☆';
-        }
-
-      }else{
-        console.log('intial item', short_article);
-        storedArticels.push(short_article);
-        localStorage.setItem(favKey, JSON.stringify([short_article]));
-        favBtn.innerText = '★';
-      }
- 
-      });
-
-      return favBtn;
-    };
 
     const processAssistantBlock = (block,index) => {
-      console.log('block',block);
+    
       if (block.dataset.hidden) return;
 
       block.dataset.processed = 'true';
       block.style.display = 'none';
       block.dataset.hidden = 'true';
+      block.id = `srj_${index}`;
 
-      const hideBtn = createButton('Hide Full Response', () => {
-        block.style.display = 'none';
-        hideBtn.remove();
-        block.parentNode.insertBefore(showBtn, block.nextSibling);
-      });
 
-      const showBtn = createButton('Show Full Response', () => {
-        block.style.display = 'block';
-        showBtn.remove();
-        block.parentNode.insertBefore(hideBtn, block.nextSibling);
-      });
 
       const child = block.querySelector('[data-start="0"]');
+
+      const originalText = child.textContent.trim();
+      const words = originalText.split(/\s+/);
+      const preview = words.length > 5 ? words.slice(0, 5).join(' ') + '...' : originalText;
+
+ 
       const short_article = {
         id:index,
         title:document.title,
-        description:child.innerHTML,
+        resPath:url,
+        description:preview,
         savedDate: new Date(),
       }
 
-      const favIcon = createFavouriteIcon(short_article);
 
-      const wrapper = document.createElement('div');
-      wrapper.style.display = 'flex';
-      wrapper.style.alignItems = 'center';
-      wrapper.appendChild(showBtn);
-      wrapper.appendChild(favIcon);
+      const {wrapper} = createToggleBtn(block,short_article);
+  
 
       block.parentNode.insertBefore(wrapper, block);
     };
@@ -146,6 +183,7 @@ function autoCollapse() {
       block.parentNode.insertBefore(previewPara, block);
       block.parentNode.insertBefore(showMoreBtn, block.nextSibling);
     };
+    
 
     assistantToCollapse.forEach(processAssistantBlock);
     userToCollapse.forEach(processUserBlock);
@@ -155,35 +193,146 @@ function autoCollapse() {
 }
 
 
+const tableActions = () => {
+  try {
+
+    const delete_btns = Array.from(document.querySelectorAll('.delete-btn'));
+    const fav_trs = Array.from(document.querySelectorAll('.fav_tr'));
+    const modal = document.getElementById('modal_ex');
+
+
+    const action = (tr,index) => {
+
+      const article = findArticleById(storedArticels, index);
+
+      const delete_btn = tr.querySelector(`.delete-btn`);
+  
+      const tds = tr.querySelectorAll(`td#td_${index}`);
+
+
+      if(tds && tds.length > 0){
+        const tdHandler = (td) => {
+          td.addEventListener("click", () => {
+
+            const assistantMessage = document.getElementById(`srj_${index}`);
+            const favBtn = document.querySelector(`.srj_${index}`);
+       
+            if(assistantMessage && url === article.resPath){
+              if(assistantMessage){
+                assistantMessage.style.display = 'block';
+               
+                favBtn?.remove();
+                
+                makeToggleCollapsToScroll(assistantMessage,article);
+              }
+              
+              assistantMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            modal.classList.add('hidden_srj');
+            modal.classList.remove("showmodal_srj");
+          
+          })
+        }
+        tds.forEach(tdHandler);
+      }
+        if(delete_btn){
+          const articleId = delete_btn.dataset.userId;
+
+
+          let favBtn = document.querySelector(`.srj_${articleId}`);
+          const trElement = document.getElementById(`fav_raw_${articleId}`);
+          
+          // const tdElement = document.getElementById(`fav_raw_${articleId}`);
+
+          const art_not_found = document.getElementById('art_not_found');
+        
+        
+        
+          delete_btn.addEventListener("click",()=>{
+      
+            if(storedArticels.length > 0 ){
+      
+              if(storedArticels.some(art => art.id.toString() === articleId.toString())){
+                const removed = storedArticels.filter(art => art.id.toString() !== articleId.toString());
+            
+                storedArticels = removed.sort((a, b) => a.id - b.id);
+      
+      
+                localStorage.setItem(favKey, JSON.stringify(storedArticels));
+            
+                if(trElement){
+                  trElement.remove();
+                  if(storedArticels.length === 0){
+                  const table = document.getElementById('article-table');
+                  table.innerHTML = "";
+                  art_not_found.innerText = "No responses found.";
+                  art_not_found.classList.remove('hidden_not_found');
+                  }
+                }
+          
+                if(favBtn){
+                  favBtn.innerText = '☆';
+                }
+              }
+        
+            }
+          })
+        }
+        if(tr.length === index){
+          return;
+        }
+        }
+
+
+    fav_trs.forEach(action);
+
+    } catch (error) {
+      console.log('error', error);
+    }
+}
+
+
+const findArticleById = (array, id) => {
+  return array.find(item => item.id.toString() === id.toString());
+}
+
 
 
 function createFloatingButton() {
-  if (document.getElementById('auto-collapse-btn')) return; // prevent duplicates
 
-  const button = document.createElement('button');
-  button.id = 'auto-collapse-btn'; // 👈 give it a stable ID
-  button.classList.add('openModalBtn')
 
-  button.innerText = '⚙️'; // Settings gear icon
+    if (document.getElementById('auto-collapse-btn')) return; // prevent duplicates
 
-  Object.assign(button.style, {
-    position: 'fixed',
-    bottom: '50%',
-    right: '20px',
-    zIndex: '9999',
-    padding: '10px 16px',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-    border:'1px solid #ddd'
-  });
+    const button = document.createElement('button');
+    button.id = 'auto-collapse-btn'; // 👈 give it a stable ID
+    button.classList.add('openModalBtn')
+  
+    button.innerText = '⚙️'; // Settings gear icon
+  
+    Object.assign(button.style, {
+      position: 'fixed',
+      bottom: '50%',
+      right: '20px',
+      zIndex: '9999',
+      padding: '10px 16px',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '14px',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      border:'1px solid #ddd'
+    });
+  
+    button.addEventListener('click', () => {
+      autoCollapse();
+    });
+  
 
-  button.addEventListener('click', () => {
-    autoCollapse();
-  });
+  
 
-  document.body.appendChild(button);
+    document.body.appendChild(button);
+  
+
 }
 
 
@@ -191,6 +340,14 @@ function createFloatingButton() {
 function modalStyles(isDark){
   const style = document.createElement('style');
 style.textContent = `
+
+   #art_not_found{
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .hidden_not_found{
+     margin-top:0 !important;
+    }
    #fav_articles{
     margin-top:1.5rem;
    }
@@ -261,7 +418,6 @@ function injectTableStyles(isDark) {
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
 
     #article-table th, #article-table td {
       padding: 12px 16px;
@@ -336,6 +492,8 @@ function detectTheme() {
   const isDark = themeMode === "dark";
   modalStyles(isDark);
   injectTableStyles(isDark);
+  tableActions();
+
 
   const btn = document.getElementById('auto-collapse-btn');
   if (btn) {
@@ -349,17 +507,19 @@ function detectTheme() {
 
 function modal() {
   const modalHTML = `
-    <div id="modal_ex" class="modal_srj hidden_srj">
-      <div class="modal-content">
-        <span id="closeModalBtn" class="close">&times;</span>
-        <h2>Favorite Responses</h2>
-        <div id="fav_articles">
+  <div id="modal_ex" class="modal_srj hidden_srj">
+    <div class="modal-content">
+      <span id="closeModalBtn" class="close">&times;</span>
+      <h2>Favorite Responses</h2>
+      <div id="art_not_found"></div>
+      <div id="fav_articles">
         <table id="article-table"></table>
         <div id="pagination"></div>
-        </div>
       </div>
     </div>
-  `;
+  </div>
+`;
+
 
   const body = document.body; // ✅ Get the actual body element directly
   body.insertAdjacentHTML('beforeend', modalHTML); // ✅ Append the modal HTML
@@ -374,41 +534,49 @@ let currentPage = 1;
 
 function renderTablePage(page) {
   const table = document.getElementById('article-table');
+  const art_not_found = document.getElementById('art_not_found');
+    
   const start = (page - 1) * rowsPerPage;
   const end = start + rowsPerPage;
   const pageItems = storedArticels.slice(start, end);
 
-  // Table Header
+  if(storedArticels && storedArticels.length > 0){
+    art_not_found.innerText = "";
+    art_not_found.classList.add('hidden_not_found');
+      // Table Header
   table.innerHTML = `
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Saved Date</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${pageItems
-        .map(
-          (a) => `
-        <tr>
-          <td>${a.id}</td>
-          <td>${a.title}</td>
-          <td>${a.description}</td>
-          <td>${new Date(a.savedDate).toLocaleDateString()}</td>
-          <td>
-            <button class="action-btn delete-btn" onclick="deleteArticle(${a.id})" title="Delete">
-              🗑️
-            </button>
-          </td>
-        </tr>`
-        )
-        .join('')}
-    </tbody>
-  `;
-  renderPagination();
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Description</th>
+      <th>Saved Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${pageItems
+      .map(
+        (a) => `
+      <tr id=fav_raw_${a.id} class="fav_tr">
+        <td>${a.id}</td>
+        <td id=td_${a.id}>${a.title}</td>
+        <td id=td_${a.id}>${a.description}</td>
+        <td>${new Date(a.savedDate).toLocaleDateString()}</td>
+        <td>
+          <button data-user-id=${a.id} class="action-btn delete-btn" title="Delete">
+            🗑️
+          </button>
+        </td>
+      </tr>`
+      )
+      .join('')}
+  </tbody>
+`;
+  }else{
+    art_not_found.innerText = "No responses found.";
+
+  }
 
 }
 
@@ -448,6 +616,8 @@ function openModal() {
   const modal = document.getElementById('modal_ex');
   const openBtn = document.querySelector('.openModalBtn');
   const closeBtn = document.getElementById('closeModalBtn');
+
+
 
   if (openBtn) {
     openBtn.addEventListener('click', () => {
@@ -499,7 +669,6 @@ window.addEventListener('load', () => {
     autoCollapse();
     detectTheme();
     openModal();
-
     // Only create the button if it doesn't already exist
     if (!document.getElementById('auto-collapse-btn')) {
       createFloatingButton();
