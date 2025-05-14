@@ -22,10 +22,8 @@ Perfect for power users who regularly work with long conversations and want a cl
 
 ## 📷 Demo
 
-> Add a screenshot or GIF here showing:
-> - Before/After collapse
-> - Adding to cards
-> - Preview toggle and user experience
+![Demo](https://res.cloudinary.com/dza2t1htw/image/upload/v1747201710/awnvsqamixgiujfdsopk.png)
+
 
 ---
 
