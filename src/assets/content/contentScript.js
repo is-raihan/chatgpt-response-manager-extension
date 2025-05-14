@@ -21,6 +21,30 @@ const createButton = (text, onClick) => {
   return button;
 };
 
+function timeAgo(date) {
+  const now = new Date();
+  const seconds = Math.floor((now - new Date(date)) / 1000);
+  
+  const intervals = [
+     { label: 'second', seconds: 60 },
+    { label: 'minute', seconds: 3600 },
+    { label: 'hour', seconds: 86400 },
+    { label: 'day', seconds: 2592000 },
+    { label: 'month', seconds: 31536000 },
+    { label: 'year', seconds: Infinity }
+  ];
+  
+  for (const { label, seconds: interval } of intervals) {
+    if (seconds < interval) {
+      const time = Math.floor(seconds / (interval / 60));
+      const plural = time !== 1 ? `${label}s` : label;
+      return time <= 1 ? `a ${plural} ago` : `${time} ${plural} ago`;
+    }
+  }
+}
+
+
+
 function removeSpecialCharacters(str) {
   return str.replace(/[^a-zA-Z0-9_]/g, '');
 }
@@ -592,7 +616,9 @@ function renderTablePage(page) {
     
   const start = (page - 1) * rowsPerPage;
   const end = start + rowsPerPage;
-  const pageItems = storedArticels.slice(start, end);
+  const pageItems = storedArticels.slice(start, end).sort((a, b) => {
+    return new Date(a.savedDate) < new Date(b.savedDate) ? 1 : a.savedDate > b.savedDate ? -1 : 0;
+  });
 
   if(storedArticels && storedArticels.length > 0){
     art_not_found.innerText = "";
@@ -616,7 +642,7 @@ function renderTablePage(page) {
         <td>${index+1}</td>
         <td id=td_${a.id}>${a.title}</td>
         <td id=td_${a.id}>${a.description}</td>
-        <td>${new Date(a.savedDate).toLocaleDateString()}</td>
+        <td>${timeAgo(new Date(a.savedDate))}</td>
         <td>
           <button data-user-id=${a.id} class="action-btn delete-btn" title="Delete">
             🗑️
@@ -634,6 +660,7 @@ function renderTablePage(page) {
 
   }
   tableActions();
+  renderPagination();
 }
 
 function renderPagination() {
