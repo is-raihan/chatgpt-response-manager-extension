@@ -21,6 +21,10 @@ const createButton = (text, onClick) => {
   return button;
 };
 
+function removeSpecialCharacters(str) {
+  return str.replace(/[^a-zA-Z0-9_]/g, '');
+}
+
 const createFavouriteIcon = (short_article) => {
 
 
@@ -156,11 +160,11 @@ function autoCollapse() {
       }
  
       const articleId = underscoreConcat(index+document.title);
-      block.id = `srj_${articleId}`;
+      block.id = `srj_${removeSpecialCharacters(articleId)}`;
 
       console.log('url', url);
       let short_article = {
-        id:articleId,
+        id:removeSpecialCharacters(articleId),
         title:document.title,
         resPath:url,
         description:preview,
@@ -265,7 +269,6 @@ const tableActions = () => {
                   btnsWrapperElement?.remove();
                 
                
-                  console.log('article', article);
          
                   if(url === article.resPath){
                       assistantMessage.style.display = 'block';
@@ -811,7 +814,7 @@ window.addEventListener('load', () => {
 
   
 
-  setTimeout(()=>{
+  // setTimeout(()=>{
     const elements = document.querySelectorAll('[data-message-author-role="assistant"]');
     if(elements){
       elements.forEach(el => {
@@ -824,7 +827,7 @@ window.addEventListener('load', () => {
         });
       });
     }
-  },4000)
+  // },4000)
 
 const htmlEl = document.documentElement; // This is the <html> element
 
@@ -883,6 +886,30 @@ observerHtmlEl.observe(htmlEl, {
   });
 
 
+
+  const observerBody = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      // Check added elements
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 &&  node.nodeName === "ARTICLE") { // Ensure it's an element
+          autoCollapse();
+        }
+      });
+  
+      // Check removed elements
+      // mutation.removedNodes.forEach((node) => {
+      //   if (node.nodeType === 1) {
+      //     console.log('Element removed:', node);
+      //   }
+      // });
+    }
+  });
+  
+  observerBody.observe(document.body, {
+    childList: true,     // ✅ Watch for direct children added/removed
+    subtree: true        // ✅ Watch *all* descendants, not just direct children
+  });
+  
 
 
 
