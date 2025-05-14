@@ -8,7 +8,7 @@
   "content_scripts": [
     {
       "matches": ["*://chatgpt.com/*"],
-      "js": ["assets/popup.js", "assets/content/contentScript.js"],
+      "js": ["src/assets/popup.js", "src/assets/content/contentScript.js"],
       "run_at": "document_idle",
       "type": "module"
     }
@@ -16,7 +16,7 @@
   "action": {
     "default_popup": "index.html",
     "default_icon": {
-      "128": "icons/icon128.png"
+      "128": "src/icons/icon128.png"
     }
   }
 }

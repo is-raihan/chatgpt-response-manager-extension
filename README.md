@@ -1,3 +1,4 @@
+
 # 🧠 ChatGPT Response Manager
 
 A lightweight yet powerful Chrome Extension that helps manage ChatGPT conversations more efficiently by **collapsing long responses**, offering **quick previews**, and letting you **save important responses for later**.
@@ -30,35 +31,21 @@ Perfect for power users who regularly work with long conversations and want a cl
 
 ## 🧰 Installation & Build Instructions
 
-This project uses **React.js** and the Chrome Extension API.
+This project uses **HTML**, **CSS**, and **JavaScript** for building the Chrome extension.
 
 ### 🔨 Build Steps
 
-1. **Install dependencies**  
+1. **Clone the repository**  
    ```bash
-   npm install
+   git clone https://github.com/yourusername/chatgpt-response-manager.git
+   cd chatgpt-response-manager
    ```
-
-2. **Build the project**  
-   ```bash
-   npm run build
-   ```
-
-   This outputs files into the `dist/` folder.
-
-3. **Manually copy `contentScript.js`** to the assets folder  
-   ```bash
-   cp public/contentScript.js dist/assets/contentScript.js
-   ```
-
-   > ⚠️ `contentScript.js` must be referenced directly in `manifest.json` due to Chrome’s Content Security Policy (CSP).
-
-4. **Load in Chrome**
+2. **Load in Chrome**
 
 - Visit `chrome://extensions/`
 - Enable **Developer Mode**
 - Click **Load Unpacked**
-- Select the `dist/` folder
+- Select the project folder containing the `manifest.json`
 
 ---
 
@@ -66,17 +53,16 @@ This project uses **React.js** and the Chrome Extension API.
 
 ```
 chatgpt-response-manager/
-├── public/
-│   └── contentScript.js        # must be manually copied post-build
 ├── src/
-│   └── App.jsx                 # React app entry
-├── dist/
-│   ├── index.html
 │   ├── assets/
-│   │   ├── contentScript.js   # manually placed
-│   │   └── main.js            # React bundle
-│   └── manifest.json
-└── README.md
+│   │   ├── content/
+│   │   │   ├── contentScript.js     # JavaScript for modifying web page content
+│   │   │   └── popup.js             # Script for popup functionality
+│   │   └── icons/
+│   │       └── icon128.png          # Extension icon
+├── index.html                       # Main HTML page for the extension
+├── manifest.json                    # Chrome Extension manifest file
+└── README.md                        # Project documentation
 ```
 
 ---
@@ -107,7 +93,7 @@ The extension enhances your ChatGPT experience through:
 | Browser        | Supported |
 |----------------|-----------|
 | Chrome         | ✅         |
-| Microsoft Edge | ✅         |
+| Microsoft Edge | 🔜 Coming Soon         |
 | Firefox        | 🔜 Coming Soon |
 
 ---
