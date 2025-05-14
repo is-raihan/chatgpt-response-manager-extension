@@ -1,6 +1,8 @@
 const favKey =  'fav_';
+let previousTitle = document.title;
+
 let storedArticels = JSON.parse(localStorage.getItem(favKey) || '[]');
-const url = window.location.href;
+let url = window.location.href;
 
 const createButton = (text, onClick) => {
   const button = document.createElement('button');
@@ -38,6 +40,8 @@ const createFavouriteIcon = (short_article) => {
 
   favBtn.addEventListener('click', () => {
 
+    console.log('short_article', short_article);
+
   if(storedArticels.length > 0 ){
  
     if(!storedArticels.some(art => art.id === short_article.id)){
@@ -51,7 +55,9 @@ const createFavouriteIcon = (short_article) => {
     }else{
       const removed = storedArticels.filter(art => art.id.toString() !== short_article.id.toString());
   
+      console.log('removed', removed);
       storedArticels = removed.sort();
+      console.log('storedArticels', storedArticels);
      
       localStorage.setItem(favKey,JSON.stringify(storedArticels));
       favBtn.innerText = '♡';
@@ -69,13 +75,21 @@ const createFavouriteIcon = (short_article) => {
   return favBtn;
 };
 
+function removeFavRawPrefix(str) {
+  const prefix = "fav_raw_";
+  return str.startsWith(prefix) ? str.slice(prefix.length) : str;
+}
+
 const createToggleBtn = (block, short_article,isScrolled=false) => {
-  const hideBtn = createButton('Hide Full Response', () => {
+  const hideBtn = createButton('Less', () => {
     block.style.display = 'none';
     hideBtn.remove();
     block.parentNode.insertBefore(showBtn, block.nextSibling);
   });
-  const showBtn = createButton('Show Full Response', () => {
+
+
+
+  const showBtn = createButton('See More', () => {
     block.style.display = 'block';
     showBtn.remove();
     hideBtn.classList.add(`hidden_btn_${short_article.id}`);
@@ -89,7 +103,6 @@ const createToggleBtn = (block, short_article,isScrolled=false) => {
   const wrapper = document.createElement('div');
   wrapper.style.display = 'flex';
   wrapper.style.alignItems = 'center';
-
   if(!isScrolled){
     wrapper.appendChild(showBtn);
   }else{
@@ -115,17 +128,21 @@ function autoCollapse() {
     const userMessages = Array.from(document.querySelectorAll('.whitespace-pre-wrap:not([data-processed])'));
 
     const assistantToCollapse = assistantMessages.slice(0,-1);
-    const userToCollapse = userMessages;
+    const userToCollapse = userMessages.slice(0,-1);
 
 
+    console.log('called autoCollapse');
     const processAssistantBlock = (block,index) => {
     
+    
       if (block.dataset.hidden) return;
+      if(!block) return;
+
 
       block.dataset.processed = 'true';
       block.style.display = 'none';
       block.dataset.hidden = 'true';
-      block.id = `srj_${index}`;
+
 
 
 
@@ -134,10 +151,16 @@ function autoCollapse() {
       const originalText = child.textContent.trim();
       const words = originalText.split(/\s+/);
       const preview = words.length > 5 ? words.slice(0, 5).join(' ') + '...' : originalText;
-
+      function underscoreConcat(text) {
+        return text.trim().split(/\s+/).join('_').toLowerCase();
+      }
  
-      const short_article = {
-        id:index,
+      const articleId = underscoreConcat(index+document.title);
+      block.id = `srj_${articleId}`;
+
+      console.log('url', url);
+      let short_article = {
+        id:articleId,
         title:document.title,
         resPath:url,
         description:preview,
@@ -146,12 +169,14 @@ function autoCollapse() {
 
 
       const {wrapper} = createToggleBtn(block,short_article);
-  
 
+
+      wrapper.id = 'toggle_btns';
       block.parentNode.insertBefore(wrapper, block);
     };
 
     const processUserBlock = (block, index) => {
+   
       if (block.dataset.hidden) return;
 
       block.dataset.processed = 'true';
@@ -193,96 +218,124 @@ function autoCollapse() {
 }
 
 
+
 const tableActions = () => {
   try {
 
-    const delete_btns = Array.from(document.querySelectorAll('.delete-btn'));
+
     const fav_trs = Array.from(document.querySelectorAll('.fav_tr'));
     const modal = document.getElementById('modal_ex');
 
 
     const action = (tr,index) => {
-
-      const article = findArticleById(storedArticels, index);
-
-      const delete_btn = tr.querySelector(`.delete-btn`);
-  
-      const tds = tr.querySelectorAll(`td#td_${index}`);
+         try {
 
 
-      if(tds && tds.length > 0){
-        const tdHandler = (td) => {
-          td.addEventListener("click", () => {
+          const artId = removeFavRawPrefix(tr.id);
+    
+          const article = findArticleById(storedArticels, artId);
+    
+          const delete_btn = tr.querySelector(`.delete-btn`);
+      
+          const tds = tr.querySelectorAll(`td#td_${artId}`);
 
-            const assistantMessage = document.getElementById(`srj_${index}`);
-            const favBtn = document.querySelector(`.srj_${index}`);
-       
-            if(assistantMessage && url === article.resPath){
-              if(assistantMessage){
-                assistantMessage.style.display = 'block';
-               
-                favBtn?.remove();
+    
+    
+          if(tds && tds.length > 0){
+    
+            const tdHandler = (td) => {
+              td.addEventListener("click", () => {
+                const artId = removeFavRawPrefix(tr.id);
                 
-                makeToggleCollapsToScroll(assistantMessage,article);
-              }
-              
-              assistantMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            
-            modal.classList.add('hidden_srj');
-            modal.classList.remove("showmodal_srj");
-          
-          })
-        }
-        tds.forEach(tdHandler);
-      }
-        if(delete_btn){
-          const articleId = delete_btn.dataset.userId;
+                const favBtns = document.querySelectorAll(`.srj_${artId}`);
+    
+                favBtns?.forEach((favBtn) => favBtn.remove());
+    
+                const assistantMessage = document.getElementById(`srj_${artId}`);
+           
+                console.log('assistantMessage', assistantMessage)
 
+                if(!assistantMessage){
+  
+                  console.log(article.resPath+`${'#'+artId}`);
+                  window.open(article.resPath+`${'#'+artId}`, '_blank');
 
-          let favBtn = document.querySelector(`.srj_${articleId}`);
-          const trElement = document.getElementById(`fav_raw_${articleId}`);
-          
-          // const tdElement = document.getElementById(`fav_raw_${articleId}`);
-
-          const art_not_found = document.getElementById('art_not_found');
-        
-        
-        
-          delete_btn.addEventListener("click",()=>{
-      
-            if(storedArticels.length > 0 ){
-      
-              if(storedArticels.some(art => art.id.toString() === articleId.toString())){
-                const removed = storedArticels.filter(art => art.id.toString() !== articleId.toString());
-            
-                storedArticels = removed.sort((a, b) => a.id - b.id);
-      
-      
-                localStorage.setItem(favKey, JSON.stringify(storedArticels));
-            
-                if(trElement){
-                  trElement.remove();
-                  if(storedArticels.length === 0){
-                  const table = document.getElementById('article-table');
-                  table.innerHTML = "";
-                  art_not_found.innerText = "No responses found.";
-                  art_not_found.classList.remove('hidden_not_found');
+                }else{
+                  const btnsWrapperElement = assistantMessage.nextElementSibling;
+                  btnsWrapperElement?.remove();
+                
+               
+                  console.log('article', article);
+         
+                  if(url === article.resPath){
+                      assistantMessage.style.display = 'block';
+                     
+                      // favBtn?.remove();
+                      makeToggleCollapsToScroll(assistantMessage,article);
+                    
+                    
+                    assistantMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }
                 }
-          
-                if(favBtn){
-                  favBtn.innerText = '☆';
-                }
-              }
-        
+
+ 
+                modal.classList.add('hidden_srj');
+                modal.classList.remove("showmodal_srj");
+              
+              })
             }
-          })
-        }
-        if(tr.length === index){
-          return;
-        }
-        }
+            tds.forEach(tdHandler);
+          }
+          if(delete_btn){
+              const articleId = delete_btn.dataset.userId;
+    
+    
+              let favBtn = document.querySelector(`.srj_${articleId}`);
+              const trElement = document.getElementById(`fav_raw_${articleId}`);
+              
+              // const tdElement = document.getElementById(`fav_raw_${articleId}`);
+    
+              const art_not_found = document.getElementById('art_not_found');
+            
+            
+            
+              delete_btn.addEventListener("click",()=>{
+          
+                if(storedArticels.length > 0 ){
+          
+                  if(storedArticels.some(art => art.id.toString() === articleId.toString())){
+                    const removed = storedArticels.filter(art => art.id.toString() !== articleId.toString());
+                
+                    storedArticels = removed.sort((a, b) => a.id - b.id);
+          
+          
+                    localStorage.setItem(favKey, JSON.stringify(storedArticels));
+                
+                    if(trElement){
+                      trElement.remove();
+                      if(storedArticels.length === 0){
+                      const table = document.getElementById('article-table');
+                      table.innerHTML = "";
+                      art_not_found.innerText = "No responses found.";
+                      art_not_found.classList.remove('hidden_not_found');
+                      }
+                    }
+              
+                    if(favBtn){
+                      favBtn.innerText = '♡';
+                    }
+                  }
+            
+                }
+              })
+          }
+          if(tr.length === index){
+              return;
+          }
+         } catch (error) {
+          console.log('error', error)
+         }
+    }
 
 
     fav_trs.forEach(action);
@@ -294,7 +347,7 @@ const tableActions = () => {
 
 
 const findArticleById = (array, id) => {
-  return array.find(item => item.id.toString() === id.toString());
+ return array.find(item => item.id.toString() == id.toString()); 
 }
 
 
@@ -492,8 +545,6 @@ function detectTheme() {
   const isDark = themeMode === "dark";
   modalStyles(isDark);
   injectTableStyles(isDark);
-  tableActions();
-
 
   const btn = document.getElementById('auto-collapse-btn');
   if (btn) {
@@ -557,9 +608,9 @@ function renderTablePage(page) {
   <tbody>
     ${pageItems
       .map(
-        (a) => `
+        (a,index) => `
       <tr id=fav_raw_${a.id} class="fav_tr">
-        <td>${a.id}</td>
+        <td>${index+1}</td>
         <td id=td_${a.id}>${a.title}</td>
         <td id=td_${a.id}>${a.description}</td>
         <td>${new Date(a.savedDate).toLocaleDateString()}</td>
@@ -567,6 +618,8 @@ function renderTablePage(page) {
           <button data-user-id=${a.id} class="action-btn delete-btn" title="Delete">
             🗑️
           </button>
+         
+          
         </td>
       </tr>`
       )
@@ -577,7 +630,7 @@ function renderTablePage(page) {
     art_not_found.innerText = "No responses found.";
 
   }
-
+  tableActions();
 }
 
 function renderPagination() {
@@ -613,7 +666,8 @@ function changePage(page) {
 
 function openModal() {
 
-  const modal = document.getElementById('modal_ex');
+  console.log('openModal');
+  const modalEl = document.getElementById('modal_ex');
   const openBtn = document.querySelector('.openModalBtn');
   const closeBtn = document.getElementById('closeModalBtn');
 
@@ -621,9 +675,11 @@ function openModal() {
 
   if (openBtn) {
     openBtn.addEventListener('click', () => {
-    if (modal) {
-      modal.classList.remove('hidden_srj');
-      modal.classList.add("showmodal_srj");
+      console.log('clicked on opne modal button');
+      console.log('modal', modalEl);
+    if (modalEl) {
+      modalEl.classList.remove('hidden_srj');
+      modalEl.classList.add("showmodal_srj");
     }
     // Initial render
     renderTablePage(currentPage);
@@ -633,19 +689,19 @@ function openModal() {
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
       // alert('Hi');
-      if(modal){
-        modal.classList.add('hidden_srj');
-        modal.classList.remove("showmodal_srj");
+      if(modalEl){
+        modalEl.classList.add('hidden_srj');
+        modalEl.classList.remove("showmodal_srj");
       }
 
     });
   }
 
   window.addEventListener('click', (e) => {
-    if(modal){
-      if (e.target === modal) {
-        modal.classList.add('hidden_srj');
-        modal.classList.remove("showmodal_srj");
+    if(modalEl){
+      if (e.target === modalEl) {
+        modalEl.classList.add('hidden_srj');
+        modalEl.classList.remove("showmodal_srj");
       }
     }
 
@@ -655,33 +711,220 @@ function openModal() {
 }
 
 
+function scrollInSection(){
+ try {
+  let hasPath = window.location.hash ;
+  let articleId;
+  if (hasPath) {
+    articleId = hasPath.startsWith('#') ? hasPath.slice(1) : str;
+  }
+
+  console.log('articleId at 717', articleId);
+  if(articleId){
+    const article = findArticleById(storedArticels,articleId);
+  
+    const assistantMessage = document.getElementById(`srj_${articleId}`);
 
 
-// Trigger on load
+
+    if(assistantMessage && article){
+      assistantMessage.style.display = 'block';
+      assistantMessage.style.padding = "4px";
+      assistantMessage.style.backgroundColor = "#dfe80112";
+      const favBtns = document.querySelectorAll(`.srj_${articleId}`);
+    
+      favBtns?.forEach((favBtn) => favBtn.remove());
+      makeToggleCollapsToScroll(assistantMessage,article);
+      assistantMessage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+  }
+ } catch (error) {
+  console.log('error', error);
+ }
+
+}
+
+
+
+
 
 window.addEventListener('load', () => {
-  // Initial run
+ 
+  // --- initial setup ---
   createFloatingButton();
-  autoCollapse();
-  // styles();
-  // Observe DOM for dynamic changes (e.g., SPA updates)
-  const observer = new MutationObserver(() => {
+  setTimeout(() => {
     autoCollapse();
-    detectTheme();
-    openModal();
-    // Only create the button if it doesn't already exist
-    if (!document.getElementById('auto-collapse-btn')) {
-      createFloatingButton();
+  },2000);
+  if (!document.getElementById('modal_ex')) {
+    modal(); // this should create #modal_ex
+   console.log('modal creating...');
+
+    // openModal();
+    console.log('called openModal()');
+  }
+  // Optional delay for scroll
+  setTimeout(scrollInSection, 2500);
+
+  const assistantMessageObserver = new MutationObserver((mutationsList) => {
+
+    console.log('mutationsList', mutationsList);
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'attributes') {
+        const oldValue = mutation.oldValue;
+        const newValue = mutation.target.getAttribute(mutation.attributeName);
+        if (oldValue === newValue) {
+          console.log('Attribute change reverted or remained the same.');
+        } else {
+          console.log(`Attribute "${mutation.attributeName}" changed from "${oldValue}" to "${newValue}"`);
+        }
+      } else if (mutation.type === 'characterData') {
+        const oldText = mutation.oldValue;
+        const newText = mutation.target.data;
+        if (oldText === newText) {
+          console.log('Text change reverted or remained the same.');
+        } else {
+          console.log(`Text changed from "${oldText}" to "${newText}"`);
+        }
+      }
     }
 
+    console.log('assistantMessage Observer');
+    // autoCollapse();
+   
 
-    if(!document.getElementById('modal_ex')){
-      modal();
-    }
+  
+    // recreate floating button if missing
+    // if (!document.getElementById('auto-collapse-btn')) {
+    //   createFloatingButton();
+    //   console.log('createFloatingButton creating...');
+     
+    // }
+
+
+    // ensure modal exists before observing it
+    // if (!document.getElementById('modal_ex')) {
+    //   modal(); // This should create #modal_ex
+    //   console.log('modal creating...');
+    // }
   });
 
-  observer.observe(document.body, {
+  
+
+  setTimeout(()=>{
+    const elements = document.querySelectorAll('[data-message-author-role="assistant"]');
+    if(elements){
+      elements.forEach(el => {
+        console.log('el', el);
+        assistantMessageObserver.observe(el, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          characterData: true
+        });
+      });
+    }
+  },4000)
+
+const htmlEl = document.documentElement; // This is the <html> element
+
+const observerHtmlEl = new MutationObserver((mutations) => {
+  for (const mutation of mutations) {
+    if (mutation.type === 'attributes') {
+      console.log(`Attribute "${mutation.attributeName}" changed`);
+      console.log('Old value:', mutation.oldValue);
+      console.log('New value:', htmlEl.getAttribute(mutation.attributeName));
+
+      if('style' === mutation.attributeName){
+        detectTheme();
+      }
+
+
+      // console.log('New value:', htmlEl.getAttribute(mutation.attributeName));
+    }
+  }
+});
+
+observerHtmlEl.observe(htmlEl, {
+  attributes: true,
+  attributeOldValue: true,
+  childList: false, // ✅ Don't observe child nodes
+  subtree: false    // ✅ Don't go into children
+});
+
+
+
+  const observePageTitle = new MutationObserver(()=>{
+   
+    if (document.title !== previousTitle) {
+      url = window.location.href;
+
+      autoCollapse();
+      openModal();
+      detectTheme();
+
+      previousTitle = document.title;
+    }
+  });
+  observePageTitle.observe(document.querySelector('title'),{
+    childList: true,
+    subtree: true,
+    attributes: true,
+    characterData: true
+  })
+
+  const floatingButtonObserver = new MutationObserver(()=> {
+    console.log('floatingButtonObserver mutation');
+  }); 
+
+  floatingButtonObserver.observe(document.getElementById("auto-collapse-btn"),{
     childList: true,
     subtree: true
   });
+
+
+
+
+
+  // bodyObserver.observe(document.body, {
+  //   // childList: true,
+  //   // // subtree: true
+  //   // // attributes: true
+  //   // characterData: true
+  //   childList: true,
+  //   subtree: true,
+  //   attributes: true,
+  //   characterData: true,
+  //   attributeOldValue: true,
+  //   characterDataOldValue: true
+  // });
+
+
+  // const modalObserver = new MutationObserver(() => {
+  //   console.log('modalObserver mutation');
+  // });
+
+  // // Wait for modal_ex to exist, then start observing it
+  // function waitAndObserveModal() {
+  //   const checkExist = setInterval(() => {
+  //     const modalEl = document.getElementById('modal_ex');
+  //     if (modalEl) {
+  //       clearInterval(checkExist);
+  //       modalObserver.observe(modalEl, {
+  //         childList: true,
+  //         subtree: true
+  //       });
+  //     }
+  //   }, 100);
+  // }
+
+  // // If modal already exists, observe it immediately
+  // if (document.getElementById('modal_ex')) {
+  //   modalObserver.observe(document.getElementById('modal_ex'), {
+  //     childList: true,
+  //     subtree: true
+  //   });
+  // } else {
+  //   waitAndObserveModal();
+  // }
 });
