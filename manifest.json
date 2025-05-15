@@ -11,11 +11,7 @@
   ],
   "content_scripts": [
     {
-      "matches": [
-        "*://chatgpt.com/*",
-        "*://chat.qwen.ai/*",
-        "*://grok.com/*"
-      ],
+      "matches": ["*://chatgpt.com/*", "*://chat.qwen.ai/*", "*://grok.com/*"],
       "js": ["src/assets/popup.js", "src/assets/content/contentScript.js"],
       "run_at": "document_idle",
       "type": "module"
