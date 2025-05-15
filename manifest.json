@@ -1,13 +1,21 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT Response Manager | Powered by SRJ",
-  "description": "Automatically collapse long text responses on ChatGPT to prevent browser crashes.",
+  "name": "LLM Response Manager ",
+  "description": "Automatically collapse long text responses on ChatGPT, Qwen, and Grok to prevent browser crashes.",
   "version": "1.0",
   "permissions": ["scripting", "activeTab"],
-  "host_permissions": ["*://chatgpt.com/*"],
+  "host_permissions": [
+    "*://chatgpt.com/*",
+    "*://chat.qwen.ai/*",
+    "*://grok.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["*://chatgpt.com/*"],
+      "matches": [
+        "*://chatgpt.com/*",
+        "*://chat.qwen.ai/*",
+        "*://grok.com/*"
+      ],
       "js": ["src/assets/popup.js", "src/assets/content/contentScript.js"],
       "run_at": "document_idle",
       "type": "module"
